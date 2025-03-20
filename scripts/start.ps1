@@ -7,5 +7,5 @@ Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5002
 Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5003" -WorkingDirectory $dotnetProjectDir
 Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5004" -WorkingDirectory $dotnetProjectDir
 
-docker start my-nginx
-docker start my-redis
+docker run my-redis
+docker run my-nginx
