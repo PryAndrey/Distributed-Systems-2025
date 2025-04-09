@@ -1,11 +1,14 @@
 $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 $dotnetProjectDir = Join-Path -Path $scriptDir -ChildPath "../lw-1/Valuator"
+$dotnetProjectDir1 = Join-Path -Path $scriptDir -ChildPath "../lw-1/RankCalculator"
 
 Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5001" -WorkingDirectory $dotnetProjectDir
 Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5002" -WorkingDirectory $dotnetProjectDir
 Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5003" -WorkingDirectory $dotnetProjectDir
 Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5004" -WorkingDirectory $dotnetProjectDir
+Start-Process -FilePath "dotnet" -ArgumentList "run --urls http://localhost:5005" -WorkingDirectory $dotnetProjectDir1
 
-docker run my-redis
-docker run my-nginx
+docker start my-redis 
+docker start my-nginx
+docker start rabbitmq

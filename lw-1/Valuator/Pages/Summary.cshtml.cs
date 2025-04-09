@@ -1,52 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace Valuator.Pages;
-public class SummaryModel : PageModel
+
+public class SummaryModel(IConnectionMultiplexer redis) : PageModel
 {
-    private readonly ILogger<SummaryModel> _logger;
-    private readonly IDatabase _redisDb;
+    private readonly IDatabase _redisDb = redis.GetDatabase();
 
-    public SummaryModel(ILogger<SummaryModel> logger, IConnectionMultiplexer redis)
-    {
-        _logger = logger;
-        _redisDb = redis.GetDatabase();
-    }
-
-    public double Rank { get; set; }
-    public double Similarity { get; set; }
+    public double Rank { get; private set; }
+    public double Similarity { get; private set; }
 
     public void OnGet(string id)
     {
-        _logger.LogDebug(id);
+        TryGetData(id);
+    }
 
-        // TODO: (pa1) проинициализировать свойство Rank значением из БД (Redis)
+    public JsonResult OnGetCheckData(string id)
+    {
+        bool isDataAvailable = TryGetData(id);
+        
+        return new JsonResult(new
+        {
+            isAvailable = isDataAvailable,
+            rank = Rank,
+            similarity = Similarity
+        });
+    }
+
+    private bool TryGetData(string id)
+    {
+        bool hasRank = false;
+        bool hasSimilarity = false;
+
         var rankValue = _redisDb.StringGet("RANK-" + id);
-        if (rankValue.HasValue && double.TryParse(rankValue, out double rank))
+        if (rankValue.HasValue && double.TryParse(rankValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var rank))
         {
             Rank = rank;
-        }
-        else
-        {
-            throw new ArgumentException(rankValue);
+            hasRank = true;
         }
 
-        // TODO: (pa1) проинициализировать свойство Similarity значением из БД (Redis)
-        var similarityValue = _redisDb.StringGet("SIMILARITY-" + id);
-        if (similarityValue.HasValue && double.TryParse(similarityValue, out double similarity))
+        var similarityValue = _redisDb.StringGet("SIMILARITY-" + id);;
+        
+        if (similarityValue.HasValue && Double.TryParse(similarityValue, out var similarity))
         {
             Similarity = similarity;
+            hasSimilarity = true;
         }
-        else
-        {
-            throw new ArgumentException(similarityValue);
-        }
+
         Console.WriteLine($"Rank: {Rank}, Similarity: {Similarity}");
+        return hasRank && hasSimilarity;
     }
 }
