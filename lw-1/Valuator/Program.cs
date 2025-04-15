@@ -18,8 +18,8 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 var rabbitMqConnection = await factory.CreateConnectionAsync();
 builder.Services.AddSingleton(rabbitMqConnection);
 
-builder.Services.AddSingleton<IRedisService, RedisService>();
-builder.Services.AddSingleton<IMessageQueueService, MessageQueueService>();
+builder.Services.AddSingleton<IDBService, Redis>();
+builder.Services.AddSingleton<IMessageQueueService, MessageQueue>();
 
 var app = builder.Build();
 

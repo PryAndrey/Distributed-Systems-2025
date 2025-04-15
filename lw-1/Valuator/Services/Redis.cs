@@ -2,14 +2,14 @@
 
 namespace Valuator.Services;
 
-public interface IRedisService
+public interface IDBService
 {
     void SaveText(string id, string text);
     void SaveSimilarity(string id, double similarity);
     double CalculateSimilarity(string id, string text);
 }
 
-public class RedisService(IConnectionMultiplexer redis) : IRedisService
+public class Redis(IConnectionMultiplexer redis) : IDBService
 {
     private readonly IDatabase _redisDb = redis.GetDatabase();
 

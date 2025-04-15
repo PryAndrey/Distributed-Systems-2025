@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using StackExchange.Redis;
@@ -20,24 +21,26 @@ class Program
             
             await channel.QueueDeclareAsync("text_queue", true, false, false);
 
+            await channel.ExchangeDeclareAsync("events_exchange", ExchangeType.Fanout, true);
+            
             var consumer = new AsyncEventingBasicConsumer(channel);
             consumer.ReceivedAsync += async (_, eventArgs) =>
             {
-                var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
+                var id = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
                 
-                var text = await db.StringGetAsync("TEXT-" + message);
+                var text = await db.StringGetAsync("TEXT-" + id);
                 
                 if (!text.HasValue)
-                {
                     return;
-                }
 
                 var textStr = text.ToString();
 
                 var rank = CalculateRank(textStr);
-                await db.StringSetAsync("RANK-" + message, rank);
+                await db.StringSetAsync("RANK-" + id, rank);
+
+                await channel.BasicPublishAsync("events_exchange", "", EventBodyCreate(id, rank));
             };
-            await channel.BasicConsumeAsync("text_queue", true, consumer);
+            await channel.BasicConsumeAsync("text_queue", true, consumer);  
             
             await Task.Delay(Timeout.Infinite);
         }
@@ -63,5 +66,12 @@ class Program
         var result = 1 - count / text.Length;
         
         return result;
+    }   
+    
+    static byte[] EventBodyCreate(string id, double value)
+    {
+        var eventData = new { EventType = "RankCalculated", TextId = id, Rank = value };
+        var eventJson = JsonSerializer.Serialize(eventData);
+        return Encoding.UTF8.GetBytes(eventJson);
     }
 }

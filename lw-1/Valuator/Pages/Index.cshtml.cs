@@ -4,7 +4,7 @@ using Valuator.Services;
 
 namespace Valuator.Pages;
 
-public class IndexModel(IRedisService redisService, IMessageQueueService messageQueueService) : PageModel
+public class IndexModel(IDBService idbService, IMessageQueueService messageQueueService) : PageModel
 {
     public void OnGet()
     {
@@ -14,12 +14,14 @@ public class IndexModel(IRedisService redisService, IMessageQueueService message
     {
         var id = Guid.NewGuid().ToString();
 
-        redisService.SaveText(id, text);
+        idbService.SaveText(id, text);
 
-        var similarity = redisService.CalculateSimilarity(id, text);
-        redisService.SaveSimilarity(id, similarity);
+        var similarity = idbService.CalculateSimilarity(id, text);
+        idbService.SaveSimilarity(id, similarity);
+        
+        await messageQueueService.SendEventAsync(id,"SimilarityCalculated", similarity);
 
-        await messageQueueService.PublishMessageAsync("text_queue", id);
+        await messageQueueService.SendIdMessageAsync("text_queue", id);
 
         return RedirectToPage("/Summary", new { id });
     }
