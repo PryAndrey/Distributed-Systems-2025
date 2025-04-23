@@ -1,0 +1,30 @@
+{
+  "client": {
+    "allow_anonymous_connect_without_token": true,
+    "allowed_origins": [
+      "*"
+    ]
+  },
+  "admin": {
+    "enabled": true,
+    "password": "SJgwB_o3dYpZyCvl1zmraw",
+    "secret": "JhrnT9axWBEBjMILNwoh6AGvSiMKji13d9QrdJlJNO_jWl8UC2Lb1fOKFEPgNrYIeHBsLV-m8Sr4nqmAS0BV0Q"
+  },
+  "http_api": {
+    "key": "buWxtDTK7-hcfk09ye1IyBXghr81AD5HxmfXfnaeBiQs1s8UXAludsajOPVCs__BxwJsCgxpVpakFdc9OqzDig"
+  },
+  "channel": {
+    "namespaces": [
+      {
+        "presence": true,
+        "allow_subscribe_for_anonymous": true,
+        "allow_subscribe_for_client": true,
+        "allow_publish_for_anonymous": true,
+        "allow_publish_for_subscriber": true,
+        "allow_presence_for_anonymous": true,
+        "allow_presence_for_subscriber": true,
+        "name": "text"
+      }
+    ]
+  }
+}

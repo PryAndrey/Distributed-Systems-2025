@@ -17,7 +17,10 @@ internal class Program
 
         var queueName = $"events_queue_{Guid.NewGuid()}";
 
-        await channel.QueueDeclareAsync(queueName, false, true, true);
+        await channel.QueueDeclareAsync(queueName, true, false, true);
+        // todo durable true
+        // todo exclusive false
+        // todo изучить параметры
 
         await channel.QueueBindAsync(queueName, "events_exchange", "");
 

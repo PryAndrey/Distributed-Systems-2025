@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -15,6 +16,7 @@ class Program
             var redis = await ConnectionMultiplexer.ConnectAsync("localhost:6379,abortConnect=false");
             var db = redis.GetDatabase();
             
+            var centrifugoService = new CentrifugoModule();
             var factory = new ConnectionFactory { HostName = "localhost" };
             await using var connection = await factory.CreateConnectionAsync();
             await using var channel = await connection.CreateChannelAsync();
@@ -36,9 +38,16 @@ class Program
                 var textStr = text.ToString();
 
                 var rank = CalculateRank(textStr);
+                
+                // Искусственная задержка
+                await Task.Delay(3000);
+                
                 await db.StringSetAsync("RANK-" + id, rank);
-
-                await channel.BasicPublishAsync("events_exchange", "", EventBodyCreate(id, rank));
+                
+                
+                await centrifugoService.PublishAsync($"text:{id}", rank.ToString(CultureInfo.InvariantCulture));
+                
+                await channel.BasicPublishAsync("events_exchange", "", CreateMessageBody(id, rank));
             };
             await channel.BasicConsumeAsync("text_queue", true, consumer);  
             
@@ -67,8 +76,9 @@ class Program
         
         return result;
     }   
-    
-    static byte[] EventBodyCreate(string id, double value)
+    // todo начало с глагола
+    // todo переименовать на message
+    static byte[] CreateMessageBody(string id, double value)
     {
         var eventData = new { EventType = "RankCalculated", TextId = id, Rank = value };
         var eventJson = JsonSerializer.Serialize(eventData);
