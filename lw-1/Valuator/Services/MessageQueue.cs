@@ -14,6 +14,7 @@ public class MessageQueue(IConnection rabbitMqConnection) : IMessageQueueService
 {
     public async Task SendIdMessageAsync(string queueName, string id)
     {
+        Console.WriteLine($"Sending id: {id}");
         await using var channel = await rabbitMqConnection.CreateChannelAsync();
         await channel.QueueDeclareAsync(queueName, durable: true, exclusive: false, autoDelete: false);
 

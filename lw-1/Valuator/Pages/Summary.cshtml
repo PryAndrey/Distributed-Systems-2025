@@ -1,11 +1,11 @@
 ﻿@page
 @model Valuator.Pages.SummaryModel
 @{
-    ViewData["Title"] = "Результаты оценки";
-
-    var id = Request.Query["id"].ToString();
-
-    var channel = "text:" + id;
+    // ViewData["Title"] = "Результаты оценки";
+    //
+    // var id = Request.Query["id"].ToString();
+    //
+    // var channel = "text:" + id;
 }
 
 <div class="row">
@@ -13,52 +13,42 @@
     <p>Плагиат: <span id="similarity">@Model.Similarity</span></p>
 </div>
 
-@section Scripts {
-    <script src="https://unpkg.com/centrifuge@5.3.4/dist/centrifuge.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // todo после connection получать данные
-
-            @*
-                checkDataAvailability();
-            *@
-
-            const centrifugo = new Centrifuge("ws://localhost:8000/connection/websocket");
-
-            centrifugo.connect();
-
-            centrifugo.newSubscription("@channel")
-                .on("publication", function (ctx) {
-                    document.getElementById('rank').textContent = ctx.data;
-                }).subscribe();
-
-
-            centrifugo.on('connect', function () {
-                console.log('Successfully connected');
-                checkDataAvailability();
-            });
-
-            centrifugo.connect();
-
-            centrifugo.newSubscription("@channel")
-                .on("publication", function (ctx) {
-                    document.getElementById('rank').textContent = ctx.data;
-                })
-                .subscribe();
-
-            function checkDataAvailability() {
-                fetch("/Summary?handler=CheckData&id=@id")
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.rank !== null) {
-                            document.getElementById('rank').textContent = data.rank;
-                        }
-                        document.getElementById('similarity').textContent = data.similarity;
-                    })
-                    .catch(error => {
-                        console.error('Error checking data:', error);
-                    });
-            }
-        });
-    </script>
-}
+@* @section Scripts { *@
+@*     <script src="https://unpkg.com/centrifuge@5.3.4/dist/centrifuge.js"></script> *@
+@*     <script> *@
+@*         document.addEventListener("DOMContentLoaded", function () { *@
+@*              *@
+@*             checkDataAvailability(); *@
+@*              *@
+@*             const centrifugo = new Centrifuge("ws://localhost:8000/connection/websocket"); *@
+@* *@
+@*             centrifugo.connect(); *@
+@*              *@
+@*             centrifugo.newSubscription("@channel") *@
+@*                 .on("publication", function (ctx) { *@
+@*                     document.getElementById('rank').textContent = ctx.data; *@
+@*                 }).subscribe(); *@
+@* *@
+@*             console.log('connecting'); *@
+@* *@
+@*             centrifugo.on('connect', function () { *@
+@*                 console.log('Successfully connected'); *@
+@*                 checkDataAvailability(); *@
+@*             }); *@
+@* *@
+@*             function checkDataAvailability() { *@
+@*                 fetch("/Summary?handler=CheckData&id=@id") *@
+@*                     .then(response => response.json()) *@
+@*                     .then(data => { *@
+@*                         if (data.rank !== null) { *@
+@*                             document.getElementById('rank').textContent = data.rank; *@
+@*                         } *@
+@*                         document.getElementById('similarity').textContent = data.similarity; *@
+@*                     }) *@
+@*                     .catch(error => { *@
+@*                         console.error('Error checking data:', error); *@
+@*                     }); *@
+@*             } *@
+@*         }); *@
+@*     </script> *@
+@* } *@

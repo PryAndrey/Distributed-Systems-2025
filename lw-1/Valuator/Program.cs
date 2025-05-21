@@ -8,13 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-var redis = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("my-redis"));
-builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
-
+var redis = ConnectionMultiplexer.Connect(builder.Configuration["DB_MAIN"]!);
 builder.Services.AddDataProtection().PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
     .SetApplicationName("Valuator");
 
-var factory = new ConnectionFactory { HostName = "localhost" };
+var factory = new ConnectionFactory { HostName = "rabbitmq" };
 var rabbitMqConnection = await factory.CreateConnectionAsync();
 builder.Services.AddSingleton(rabbitMqConnection);
 

@@ -9,7 +9,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        var factory = new ConnectionFactory { HostName = "localhost" };
+        var factory = new ConnectionFactory { HostName = "rabbitmq" };
         await using var connection = await factory.CreateConnectionAsync();
         await using var channel = await connection.CreateChannelAsync();
 
@@ -18,9 +18,6 @@ internal class Program
         var queueName = $"events_queue_{Guid.NewGuid()}";
 
         await channel.QueueDeclareAsync(queueName, true, false, true);
-        // todo durable true
-        // todo exclusive false
-        // todo изучить параметры
 
         await channel.QueueBindAsync(queueName, "events_exchange", "");
 

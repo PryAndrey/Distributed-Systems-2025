@@ -11,7 +11,7 @@ public class CentrifugoModule
     {
         try
         {
-            _httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:8000") };
+            _httpClient = new HttpClient { BaseAddress = new Uri("http://centrifugo:8000") };
             _httpClient.DefaultRequestHeaders.Add("Authorization",
                 "apikey buWxtDTK7-hcfk09ye1IyBXghr81AD5HxmfXfnaeBiQs1s8UXAludsajOPVCs__BxwJsCgxpVpakFdc9OqzDig");
         }
@@ -26,6 +26,7 @@ public class CentrifugoModule
     {
         try
         {
+            Console.WriteLine("Send centrifugo start");
             var request = new { method = "publish", @params = new { channel, data } };
 
             var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
