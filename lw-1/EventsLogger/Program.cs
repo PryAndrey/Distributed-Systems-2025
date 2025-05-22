@@ -9,7 +9,15 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        var factory = new ConnectionFactory { HostName = "rabbitmq" };
+        var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "appuser";
+        var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "1234";
+        var factory = new ConnectionFactory
+        {
+            HostName = "rabbitmq",
+            UserName = rabbitUser,
+            Password = rabbitPass
+        };
+        
         await using var connection = await factory.CreateConnectionAsync();
         await using var channel = await connection.CreateChannelAsync();
 

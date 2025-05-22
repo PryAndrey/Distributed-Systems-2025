@@ -1,8 +1,8 @@
-﻿services:
+﻿version: "3.9"
+
+services:
   valuator:
     image: valuator
-    deploy:
-      replicas: 2
     build:
       context: .
       dockerfile: Valuator/Dockerfile
@@ -20,15 +20,16 @@
       centrifugo:
         condition: service_started
     environment:
-      - DB_MAIN=redis-main:6379
-      - DB_RU=redis-ru:6379
-      - DB_EU=redis-eu:6379
-      - DB_ASIA=redis-asia:6379
+      - DB_MAIN=redis-main:6379,password=1234
+      - DB_RU=redis-ru:6379,password=1234
+      - DB_EU=redis-eu:6379,password=1234
+      - DB_ASIA=redis-asia:6379,password=1234
+      - REDIS_PASSWORD=1234
+      - RABBITMQ_USER=appuser
+      - RABBITMQ_PASS=1234
 
   rankcalculator:
     image: rankcalculator
-    deploy:
-      replicas: 2
     build:
       context: .
       dockerfile: RankCalculator/Dockerfile
@@ -46,82 +47,92 @@
       centrifugo:
         condition: service_started
     environment:
-      - DB_MAIN=redis-main:6379
-      - DB_RU=redis-ru:6379
-      - DB_EU=redis-eu:6379
-      - DB_ASIA=redis-asia:6379
-  
+      - DB_MAIN=redis-main:6379,password=1234
+      - DB_RU=redis-ru:6379,password=1234
+      - DB_EU=redis-eu:6379,password=1234
+      - DB_ASIA=redis-asia:6379,password=1234
+      - REDIS_PASSWORD=1234
+      - RABBITMQ_USER=appuser
+      - RABBITMQ_PASS=1234
+
   eventslogger:
     image: eventslogger
-    deploy:
-      replicas: 2
     build:
       context: .
       dockerfile: EventsLogger/Dockerfile
     depends_on:
       rabbitmq:
         condition: service_healthy
+    environment:
+      - RABBITMQ_USER=appuser
+      - RABBITMQ_PASS=1234
 
   redis-main:
     image: redis
-    volumes:
-      - redis-main-data:/data
+    command: ["redis-server", "--requirepass", "1234"]
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "-a", "1234", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
       - "6379:6379"
-  
+
   redis-ru:
     image: redis
-    volumes:
-      - redis-ru-data:/data
+    command: ["redis-server", "--requirepass", "1234"]
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "-a", "1234", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
       - "6380:6379"
-  
+
   redis-eu:
     image: redis
-    volumes:
-      - redis-eu-data:/data
+    command: ["redis-server", "--requirepass", "1234"]
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "-a", "1234", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
       - "6381:6379"
-  
+
   redis-asia:
     image: redis
-    volumes:
-      - redis-asia-data:/data
+    command: ["redis-server", "--requirepass", "1234"]
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "-a", "1234", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
       - "6382:6379"
-  
+
   rabbitmq:
     image: rabbitmq:management
+    environment:
+      RABBITMQ_DEFAULT_USER: appuser
+      RABBITMQ_DEFAULT_PASS: 1234
     ports:
       - "15672:15672"
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
+      - "5672:5672"
     healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
       timeout: 5s
       retries: 5
-  
+
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    volumes:
+      - ./centrifugo/config.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    ports:
+      - "8000:8000"
+
   nginx:
     image: nginx
     ports:
@@ -132,14 +143,6 @@
     depends_on:
       - valuator
       - rankcalculator
-  
-  centrifugo:
-    image: centrifugo/centrifugo:v5
-    volumes:
-      - ./centrifugo/config.json:/centrifugo/config.json
-    command: centrifugo -c config.json
-    ports:
-      - "8000:8000"
 
 volumes:
   redis-main-data:

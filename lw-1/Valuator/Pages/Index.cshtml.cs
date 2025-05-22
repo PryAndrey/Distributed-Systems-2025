@@ -12,19 +12,19 @@ public class IndexModel(IDBService idbService, IMessageQueueService messageQueue
     
     public async Task<IActionResult> OnPost(string text, string country)
     {
+        if (!User.Identity.IsAuthenticated)
+            return RedirectToPage("/Login");
+        
         var id = Guid.NewGuid().ToString();
-
         var region = GetRegionByCountry(country);
-
         await idbService.SaveRegion(id, region);
         
-        await idbService.SaveText(id, text);
+        await idbService.SaveText(id, text, User.Identity.Name);
 
         var similarity = idbService.CalculateSimilarity(id, text);
         await idbService.SaveSimilarity(id, similarity);
 
         await messageQueueService.SendEventAsync(id,"SimilarityCalculated", similarity);
-
         await messageQueueService.SendIdMessageAsync("text_queue", id);
 
         return RedirectToPage("/Summary", new { id });

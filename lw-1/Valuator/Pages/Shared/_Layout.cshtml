@@ -11,6 +11,16 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <span>Вы вошли как @User.Identity.Name</span> 
+                <a href="/Logout">Выйти</a>
+            }
+            else
+            {
+                <a href="/Login">Войти</a>
+                <a href="/Register">Регистрация</a>
+            }
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">Valuator</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"

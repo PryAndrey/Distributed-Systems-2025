@@ -13,6 +13,7 @@ public class SummaryModel : PageModel
 
     public double? Rank { get; private set; }
     public double Similarity { get; private set; }
+    public string? Error { get; set; }
 
     public SummaryModel(IDBService dbService, ILogger<SummaryModel> logger)
     {
@@ -20,9 +21,20 @@ public class SummaryModel : PageModel
         _logger = logger;
     }
     
-    public async Task OnGet(string id)
+    public async Task<IActionResult> OnGet(string id)
     {
+        if (!User.Identity.IsAuthenticated)
+            return RedirectToPage("/Login");
+
+        var author = await _dbService.GetAuthorOfText(id);
+        if (author == null || author != User.Identity.Name)
+        {
+            Error = "Нет доступа.";
+            return Forbid();
+        }
+
         await TryGetData(id);
+        return Page();
     }
     
     public async Task<JsonResult> OnGetCheckData(string id)

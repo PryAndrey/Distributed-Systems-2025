@@ -1,0 +1,14 @@
+﻿@page
+@model Valuator.Pages.RegisterModel
+
+<h1>Регистрация</h1>
+<form method="post">
+    <label>Логин: <input asp-for="Login" required /></label><br/>
+    <label>Пароль: <input asp-for="Password" type="password" required /></label><br/>
+    <label>Подтвердите пароль: <input asp-for="ConfirmPassword" type="password" required /></label><br/>
+    <button type="submit">Создать аккаунт</button>
+</form>
+@if (Model.Error != null)
+{
+    <p style="color:red">@Model.Error</p>
+}
