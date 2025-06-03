@@ -8,6 +8,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RankCalculator", "RankCalcu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsLogger", "EventsLogger\EventsLogger.csproj", "{4BE31208-BE8D-4B01-98DF-3064EFE4134A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RankCalculator_unitTests", "RankCalculator_unitTests\RankCalculator_unitTests.csproj", "{AF420B76-DE5C-4477-A710-0BB2A6E41F3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Specs", "System.Specs\System.Specs.csproj", "{075D04B7-CEE4-4582-8D0A-54E0CB584EDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +30,14 @@ Global
 		{4BE31208-BE8D-4B01-98DF-3064EFE4134A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BE31208-BE8D-4B01-98DF-3064EFE4134A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BE31208-BE8D-4B01-98DF-3064EFE4134A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF420B76-DE5C-4477-A710-0BB2A6E41F3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF420B76-DE5C-4477-A710-0BB2A6E41F3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF420B76-DE5C-4477-A710-0BB2A6E41F3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF420B76-DE5C-4477-A710-0BB2A6E41F3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{075D04B7-CEE4-4582-8D0A-54E0CB584EDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{075D04B7-CEE4-4582-8D0A-54E0CB584EDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{075D04B7-CEE4-4582-8D0A-54E0CB584EDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{075D04B7-CEE4-4582-8D0A-54E0CB584EDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

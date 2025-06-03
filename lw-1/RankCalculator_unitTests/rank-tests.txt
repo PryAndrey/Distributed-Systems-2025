@@ -1,0 +1,7 @@
+"" - 0.0
+"Hello" - 0.0
+"123" - 1.0
+"abc1,.23d  ef456!!!?" - 0.7
+"Café naïve façade" - 0.1176
+"☺☹☠" - 1.0
+"  leading and trailing  " - 0.25
