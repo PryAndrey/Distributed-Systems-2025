@@ -13,16 +13,16 @@ class Program
     {
         try
         {
-            var redis = await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_MAIN") ?? "redis-main:6379,password=1234");
+            var redis = await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_MAIN"));
             var db = redis.GetDatabase();
 
             var regionalRedisConnections = new Dictionary<string, IConnectionMultiplexer>();
             regionalRedisConnections["RU"] =
-                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_RU") ?? "redis-ru:6379,password=1234");
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_RU"));
             regionalRedisConnections["EU"] =
-                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_EU") ?? "redis-eu:6379,password=1234");
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_EU"));
             regionalRedisConnections["ASIA"] =
-                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_ASIA") ?? "redis-asia:6379,password=1234");
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_ASIA"));
 
             var regionalDbs = new Dictionary<string, IDatabase>();
             regionalDbs["RU"] = regionalRedisConnections["RU"].GetDatabase();
@@ -36,7 +36,7 @@ class Program
             var factory = new ConnectionFactory { HostName = "rabbitmq", UserName = rabbitUser, Password = rabbitPass };
             await using var connection = await factory.CreateConnectionAsync();
             await using var channel = await connection.CreateChannelAsync();
-            
+
             await channel.QueueDeclareAsync("text_queue", true, false, false);
 
             await channel.ExchangeDeclareAsync("events_exchange", ExchangeType.Fanout, true);
@@ -45,12 +45,12 @@ class Program
             consumer.ReceivedAsync += async (_, eventArgs) =>
             {
                 var id = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
-                
+
                 Console.WriteLine($"LOOKUP: {id}, MAIN");
                 var regionValue = await db.StringGetAsync($"REGION-{id}");
 
                 if (!regionValue.HasValue) return;
-                
+
                 var region = regionValue.ToString();
 
                 if (!regionalDbs.TryGetValue(region, out var regionalDb)) return;
@@ -107,20 +107,3 @@ class Program
         return Encoding.UTF8.GetBytes(eventJson);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

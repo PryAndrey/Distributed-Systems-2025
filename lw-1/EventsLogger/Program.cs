@@ -9,8 +9,8 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "appuser";
-        var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "1234";
+        var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER");
+        var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS");
         var factory = new ConnectionFactory
         {
             HostName = "rabbitmq",
