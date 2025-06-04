@@ -31,16 +31,16 @@ class Program
     {
         try
         {
-            var redis = await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_MAIN"));
+            var redis = await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_MAIN") ?? "redis-main:6379,password=1234");
             var db = redis.GetDatabase();
             
             var regionalRedisConnections = new Dictionary<string, IConnectionMultiplexer>();
             regionalRedisConnections["RU"] =
-                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_RU"));
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_RU") ?? "redis-ru:6379,password=1234");
             regionalRedisConnections["EU"] =
-                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_EU"));
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_EU") ?? "redis-eu:6379,password=1234");
             regionalRedisConnections["ASIA"] =
-                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_ASIA"));
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_ASIA") ?? "redis-asia:6379,password=1234");
 
             var regionalDbs = new Dictionary<string, IDatabase>();
             regionalDbs["RU"] = regionalRedisConnections["RU"].GetDatabase();
@@ -68,7 +68,7 @@ class Program
                 var regionValue = await db.StringGetAsync($"REGION-{id}");
                 
                 if (!regionValue.HasValue) return;
-
+                
                 var region = regionValue.ToString();
 
                 if (!regionalDbs.TryGetValue(region, out var regionalDb)) return;
@@ -112,3 +112,20 @@ class Program
         return Encoding.UTF8.GetBytes(eventJson);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
