@@ -11,7 +11,7 @@ namespace System.Specs.Steps;
 [Binding]
 public class SystemStepDefinitions : IDisposable
 {
-    private const string Url = "http://nginx:8080/";
+    private const string Url = "http://localhost:8080/"; 
     
     private readonly IWebDriver _driver;
     private readonly IndexPage _indexPage;
@@ -52,16 +52,12 @@ public class SystemStepDefinitions : IDisposable
     {
         _driver.Dispose();
     }
-
+    
     private static IWebDriver GetRemoteChromeDriver()
     {
-        var seleniumHubUrl = new Uri("http://selenium-hub:4444/wd/hub");
-
+        var seleniumHubUrl = new Uri("http://localhost:4444/wd/hub");
         var options = new ChromeOptions();
-        options.AddArgument("--headless");
-        options.AddArgument("--no-sandbox");
-        options.AddArgument("--disable-dev-shm-usage");
-
-        return new RemoteWebDriver(seleniumHubUrl, options.ToCapabilities());
+        options.AddArgument("--headless=new");
+        return new RemoteWebDriver(seleniumHubUrl, options);
     }
 }

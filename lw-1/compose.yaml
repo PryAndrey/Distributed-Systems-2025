@@ -1,6 +1,23 @@
-﻿version: "3.9"
-
-services:
+﻿services:
+  
+#  selenium-hub:
+#    image: selenium/hub:4.33.0
+#    container_name: selenium-hub
+#    ports:
+#      - "4444:4444"
+#
+#  chrome:
+#    image: selenium/node-chrome:4.33.0
+#    shm_size: 2gb
+#    environment:
+#      SE_EVENT_BUS_HOST: selenium-hub
+#      SE_EVENT_BUS_PUBLISH_PORT: 4442
+#      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+#      SE_VNC_NO_PASSWORD: 1
+#    depends_on:
+#      - selenium-hub
+        
+      
   valuator:
     image: valuator
     build:
@@ -77,7 +94,7 @@ services:
       retries: 5
     ports:
       - "6379:6379"
-
+      
   redis-ru:
     image: redis
     command: ["redis-server", "--requirepass", "1234"]
@@ -133,6 +150,61 @@ services:
     ports:
       - "8000:8000"
 
+
+  webapp1:
+    volumes:
+      - data-protection-keys:/root/.aspnet/DataProtection-Keys
+    build:
+      context: .
+      dockerfile: Valuator/Dockerfile
+    depends_on:
+      redis-main:
+        condition: service_healthy
+      redis-ru:
+        condition: service_healthy
+      redis-eu:
+        condition: service_healthy
+      redis-asia:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  webapp2:
+    volumes:
+      - data-protection-keys:/root/.aspnet/DataProtection-Keys
+    build:
+      context: .
+      dockerfile: Valuator/Dockerfile
+    depends_on:
+      redis-main:
+        condition: service_healthy
+      redis-ru:
+        condition: service_healthy
+      redis-eu:
+        condition: service_healthy
+      redis-asia:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+    ports:
+      - "5002:5002"
+    env_file:
+      - .env
+    networks:
+      - app-network
+        
   nginx:
     image: nginx
     ports:
@@ -143,10 +215,37 @@ services:
     depends_on:
       - valuator
       - rankcalculator
-
+      - webapp1
+      - webapp2
+    networks:
+      - app-network
+  
+  e2e-tests:
+    build:
+      context: .
+      dockerfile: System.Specs/Dockerfile
+    depends_on:
+      - webapp1
+      - webapp2
+      - redis-main
+      - redis-ru
+      - rabbitmq
+      - nginx
+    networks:
+      - app-network
+    shm_size: 2g
+    environment:
+      - BASE_URL=http://nginx:8080
+    command: [ "/wait-for-it.sh", "nginx:8080", "--", "dotnet", "test", "--logger:trx" ]    
+    
 volumes:
   redis-main-data:
   redis-ru-data:
   redis-eu-data:
   redis-asia-data:
   rabbitmq-data:
+  data-protection-keys:
+
+networks:
+  app-network:
+    external: true

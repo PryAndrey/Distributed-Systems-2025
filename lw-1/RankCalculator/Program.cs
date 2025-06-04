@@ -31,11 +31,27 @@ class Program
     {
         try
         {
-            var redis = await ConnectionMultiplexer.ConnectAsync("localhost:6379,abortConnect=false");
+            var redis = await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_MAIN"));
             var db = redis.GetDatabase();
             
+            var regionalRedisConnections = new Dictionary<string, IConnectionMultiplexer>();
+            regionalRedisConnections["RU"] =
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_RU"));
+            regionalRedisConnections["EU"] =
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_EU"));
+            regionalRedisConnections["ASIA"] =
+                await ConnectionMultiplexer.ConnectAsync(Environment.GetEnvironmentVariable("DB_ASIA"));
+
+            var regionalDbs = new Dictionary<string, IDatabase>();
+            regionalDbs["RU"] = regionalRedisConnections["RU"].GetDatabase();
+            regionalDbs["EU"] = regionalRedisConnections["EU"].GetDatabase();
+            regionalDbs["ASIA"] = regionalRedisConnections["ASIA"].GetDatabase();
+
             var centrifugoService = new CentrifugoModule();
-            var factory = new ConnectionFactory { HostName = "localhost" };
+
+            var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "appuser";
+            var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "1234";
+            var factory = new ConnectionFactory { HostName = "rabbitmq", UserName = rabbitUser, Password = rabbitPass };
             await using var connection = await factory.CreateConnectionAsync();
             await using var channel = await connection.CreateChannelAsync();
             
@@ -48,28 +64,34 @@ class Program
             {
                 var id = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
                 
-                var text = await db.StringGetAsync("TEXT-" + id);
+                Console.WriteLine($"LOOKUP: {id}, MAIN");
+                var regionValue = await db.StringGetAsync($"REGION-{id}");
                 
-                if (!text.HasValue)
-                    return;
+                if (!regionValue.HasValue) return;
+
+                var region = regionValue.ToString();
+
+                if (!regionalDbs.TryGetValue(region, out var regionalDb)) return;
+
+                Console.WriteLine($"LOOKUP: {id}, {region}");
+                var text = await regionalDb.StringGetAsync("TEXT-" + id);
+
+                if (!text.HasValue) return;
 
                 var textStr = text.ToString();
 
-<<<<<<< Updated upstream
-                var rank = CalculateRank(textStr);
-                
-=======
+
                 var rank = RankCalculator.CalculateRank(textStr);
 
                 Console.WriteLine($"LOOKUP: {id}, {region}");
->>>>>>> Stashed changes
+
                 // Искусственная задержка
-                await Task.Delay(3000);
+                // await Task.Delay(3000);
                 
-                await db.StringSetAsync("RANK-" + id, rank);
+                await regionalDb.StringSetAsync("RANK-" + id, rank);
                 
-                
-                await centrifugoService.PublishAsync($"text:{id}", rank.ToString(CultureInfo.InvariantCulture));
+                // Console.WriteLine("Send centrifugo");
+                // await centrifugoService.PublishAsync($"text:{id}", rank.ToString(CultureInfo.InvariantCulture));
                 
                 await channel.BasicPublishAsync("events_exchange", "", CreateMessageBody(id, rank));
             };
@@ -81,32 +103,8 @@ class Program
         {
             Console.ReadKey();
         }
-    }
+    } 
 
-<<<<<<< Updated upstream
-    static double CalculateRank(string text)
-    {
-        if (String.IsNullOrEmpty(text))
-        {
-            return 0;
-        }
-        
-        double count = 0;
-        foreach (var character in text)
-        {
-            count += Char.IsLetter(char.ToLower(character)) ? 1 : 0;
-        }
-
-        var result = 1 - count / text.Length;
-        
-        return result;
-    }   
-    // todo начало с глагола
-    // todo переименовать на message
-=======
-
-
->>>>>>> Stashed changes
     static byte[] CreateMessageBody(string id, double value)
     {
         var eventData = new { EventType = "RankCalculated", TextId = id, Rank = value };
